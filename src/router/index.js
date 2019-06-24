@@ -79,19 +79,19 @@ export const constantRoutes = [
         path: 'dashboard',
         component: () => import('@/views/dashboard/index'),
         name: 'Dashboard',
-        meta: { title: 'Dashboard', icon: 'dashboard', affix: true }
+        meta: { title: 'Dashboard', icon: 'dashboard', affix: false }
       }
     ]
   },
   {
-    path: '/documentation',
+    path: '/trigger',
     component: Layout,
     children: [
       {
-        path: 'index',
-        component: () => import('@/views/documentation/index'),
-        name: 'Documentation',
-        meta: { title: 'Documentation', icon: 'documentation', affix: true }
+        path: 'trigger',
+        component: () => import('@/views/trigger/index'),
+        name: 'trigger',
+        meta: { title: '触发器列表', icon: 'documentation', affix: false }
       }
     ]
   },
