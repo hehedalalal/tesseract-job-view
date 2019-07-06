@@ -102,8 +102,20 @@ export const constantRoutes = [
       {
         path: 'user',
         component: () => import('@/views/user/index'),
-        name: 'trigger',
+        name: 'user',
         meta: { title: '用户列表', icon: 'documentation', affix: false }
+      }
+    ]
+  },
+  {
+    path: '/log',
+    component: Layout,
+    children: [
+      {
+        path: 'log',
+        component: () => import('@/views/log/index'),
+        name: 'log',
+        meta: { title: '日志列表', icon: 'documentation', affix: false }
       }
     ]
   },

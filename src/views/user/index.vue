@@ -36,21 +36,22 @@
         </el-table-column>
         <el-table-column align="center" label="状态">
           <template slot-scope="scope">
-            <span>{{ statusMap.get(scope.row.status) }}</span>
+            <span v-if="scope.row.status==0" style="color: #67C23A;font-weight: bold">{{ statusMap.get(scope.row.status) }}</span>
+            <span v-else style="color: #F56C6C;font-weight: bold">{{ statusMap.get(scope.row.status) }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="创建时间" width="150">
+        <el-table-column align="center" label="创建时间" width="180">
           <template slot-scope="scope">
-            <span>{{ scope.row.createTime==0 ? '': parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+            <span>{{ scope.row.createTime==0 ? '': parseTime(scope.row.createTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="更新时间" width="150">
+        <el-table-column align="center" label="更新时间" width="180">
           <template slot-scope="scope">
-            <span>{{ scope.row.updateTime==0 ? '': parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+            <span>{{ scope.row.updateTime==0 ? '': parseTime(scope.row.updateTime) }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column align="center" label="操作" width="450">
+        <el-table-column align="center" label="操作" width="280">
           <template slot-scope="{row}">
             <el-button
               type="warning"
@@ -82,6 +83,7 @@
         :total="pageInfo.total"
         :current-page="pageInfo.currentPage"
         :page-size="pageInfo.pageSize"
+        @current-change="pageChange"
       />
     </el-row>
     <el-dialog v-el-drag-dialog :visible.sync="dialogTableVisible" title="触发器信息" @dragDialog="handleDrag">
@@ -101,6 +103,7 @@
 import elDragDialog from '@/directive/el-drag-dialog'
 import { getAllUser, addUser } from '@/api/user'
 import constant from './constant'
+import { parseTime } from '@/utils'
 
 export default {
   name: 'User',
@@ -127,6 +130,11 @@ export default {
     this.getUserList()
   },
   methods: {
+    parseTime: parseTime,
+    pageChange(currentPage) {
+      this.pageInfo.currentPage = currentPage
+      this.getUserList()
+    },
     getUserList() {
       getAllUser(this.pageInfo).then(response => {
         this.pageInfo = response.pageInfo

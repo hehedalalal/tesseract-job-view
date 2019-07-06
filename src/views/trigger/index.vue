@@ -15,7 +15,7 @@
           <el-input placeholder="创建人" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">查询</el-button>
+          <el-button type="primary" @click="getTriggerList">查询</el-button>
         </el-form-item>
         <el-form-item>
           <el-button type="success" @click="dialogTableVisible=true">新增触发器</el-button>
@@ -34,17 +34,17 @@
             <span>{{ scope.row.name }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="下一次调度时间" width="150">
+        <el-table-column align="center" label="下一次调度时间" width="180">
           <template slot-scope="scope">
-            <span>{{ scope.row.nextTriggerTime==0 ? '': parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+            <span>{{ scope.row.nextTriggerTime==0 ? '': parseTime(scope.row.nextTriggerTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="上一次调度时间" width="150">
+        <el-table-column align="center" label="上一次调度时间" width="180">
           <template slot-scope="scope">
-            <span>{{ scope.row.prevTriggerTime==0 ? '': parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+            <span>{{ scope.row.prevTriggerTime==0 ? '': parseTime(scope.row.nextTriggerTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="cron表达式">
+        <el-table-column align="center" label="cron表达式" width="120">
           <template slot-scope="scope">
             <span>{{ scope.row.cron }}</span>
           </template>
@@ -67,7 +67,8 @@
         </el-table-column>
         <el-table-column align="center" label="状态">
           <template slot-scope="scope">
-            <span>{{ statusMap.get(scope.row.status) }}</span>
+            <span v-if="scope.row.status==1||scope.row.status==2" style="color: #67C23A;font-weight: bold">{{ statusMap.get(scope.row.status) }}</span>
+            <span v-else style="color: #F56C6C;font-weight: bold">{{ statusMap.get(scope.row.status) }}</span>
           </template>
         </el-table-column>
         <el-table-column align="center" label="创建者">
@@ -75,13 +76,13 @@
             <span>{{ scope.row.creator }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="创建时间" width="150">
+        <el-table-column align="center" label="创建时间" width="180">
           <template slot-scope="scope">
-            <span>{{ scope.row.createTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+            <span>{{ scope.row.createTime==0 ? '': parseTime(scope.row.createTime) }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column align="center" label="操作" width="450">
+        <el-table-column align="center" label="操作" width="440">
           <template slot-scope="{row}">
             <el-button
               type="warning"
@@ -110,7 +111,7 @@
             </el-button>
             <el-button
               v-else
-              type="primary"
+              type="info"
               size="small"
               icon="el-icon-edit"
               @click="row.edit=!row.edit"
@@ -138,6 +139,7 @@
         :total="pageInfo.total"
         :current-page="pageInfo.currentPage"
         :page-size="pageInfo.pageSize"
+        @current-change="pageChange"
       />
     </el-row>
     <el-dialog v-el-drag-dialog :visible.sync="dialogTableVisible" title="触发器信息" @dragDialog="handleDrag">
@@ -170,6 +172,7 @@
 <script>
 import elDragDialog from '@/directive/el-drag-dialog'
 import { getAllTrigger, addTrigger } from '@/api/trigger'
+import { parseTime } from '@/utils'
 import constant from './constant'
 
 export default {
@@ -212,6 +215,11 @@ export default {
     this.getTriggerList()
   },
   methods: {
+    pageChange(currentPage) {
+      this.pageInfo.currentPage = currentPage
+      this.getTriggerList()
+    },
+    parseTime: parseTime,
     getTriggerList() {
       getAllTrigger(this.pageInfo).then(response => {
         this.pageInfo = response.pageInfo
