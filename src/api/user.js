@@ -14,3 +14,18 @@ export function logout() {
     method: 'post'
   })
 }
+export function getAllUser(params) {
+  return request({
+    url: '/tesseract-user/userList',
+    method: 'get',
+    params: params
+  })
+}
+
+export function addTrigger(data) {
+  return request({
+    url: '/tesseract-user/addUser',
+    method: 'post',
+    data: data
+  })
+}

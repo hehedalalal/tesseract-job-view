@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getAllTrigger(params) {
   return request({
-    url: '/tesseract-trigger/trigger',
+    url: '/tesseract-trigger/triggerList',
     method: 'get',
     params: params
   })

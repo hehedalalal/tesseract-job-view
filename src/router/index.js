@@ -96,6 +96,18 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/user',
+    component: Layout,
+    children: [
+      {
+        path: 'user',
+        component: () => import('@/views/user/index'),
+        name: 'trigger',
+        meta: { title: '用户列表', icon: 'documentation', affix: false }
+      }
+    ]
+  },
+  {
     path: '/guide',
     component: Layout,
     redirect: '/guide/index',
