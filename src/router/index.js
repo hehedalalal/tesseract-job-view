@@ -120,6 +120,18 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/executor',
+    component: Layout,
+    children: [
+      {
+        path: 'executor',
+        component: () => import('@/views/executor/index'),
+        name: 'executor',
+        meta: { title: '执行器列表', icon: 'documentation', affix: false }
+      }
+    ]
+  },
+  {
     path: '/guide',
     component: Layout,
     redirect: '/guide/index',

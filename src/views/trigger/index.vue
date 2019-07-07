@@ -3,22 +3,22 @@
     <el-row>
       <el-form :inline="true">
         <el-form-item label="执行器">
-          <el-input placeholder="执行器" />
+          <el-input placeholder="执行器"/>
         </el-form-item>
         <el-form-item label="任务描述">
-          <el-input placeholder="任务描述" />
+          <el-input placeholder="任务描述"/>
         </el-form-item>
         <el-form-item label="状态">
-          <el-input placeholder="状态" />
+          <el-input placeholder="状态"/>
         </el-form-item>
         <el-form-item label="创建人">
-          <el-input placeholder="创建人" />
+          <el-input placeholder="创建人"/>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="getTriggerList">查询</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="success" @click="dialogTableVisible=true">新增触发器</el-button>
+          <el-button type="success" @click="addTriggerInfo">新增触发器</el-button>
         </el-form-item>
       </el-form>
     </el-row>
@@ -32,6 +32,11 @@
         <el-table-column align="center" label="名字">
           <template slot-scope="scope">
             <span>{{ scope.row.name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="执行器">
+          <template slot-scope="scope">
+            <span>{{ scope.row.executorName }}</span>
           </template>
         </el-table-column>
         <el-table-column align="center" label="下一次调度时间" width="180">
@@ -145,20 +150,29 @@
     <el-dialog v-el-drag-dialog :visible.sync="dialogTableVisible" title="触发器信息" @dragDialog="handleDrag">
       <el-form ref="triggerForm" :inline="false" :model="triggerInfo" :rules="triggerRules" label-width="120px">
         <el-form-item label="触发器名字" prop="name">
-          <el-input ref="name" v-model="triggerInfo.name" placeholder="触发器名字" />
+          <el-input ref="name" v-model="triggerInfo.name" placeholder="触发器名字"/>
         </el-form-item>
         <el-form-item label="cron表达式" prop="cron">
-          <el-input ref="cron" v-model="triggerInfo.cron" placeholder="cron表达式" />
+          <el-input ref="cron" v-model="triggerInfo.cron" placeholder="cron表达式"/>
         </el-form-item>
         <el-form-item label="分片数" prop="shardingNum">
-          <el-input ref="shardingNum" v-model.number="triggerInfo.shardingNum" placeholder="分片数" />
+          <el-input ref="shardingNum" v-model.number="triggerInfo.shardingNum" placeholder="分片数"/>
         </el-form-item>
         <el-form-item label="失败重试数" prop="retryCount">
-          <el-input ref="retryCount" v-model.number="triggerInfo.retryCount" placeholder="分片数" />
+          <el-input ref="retryCount" v-model.number="triggerInfo.retryCount" placeholder="分片数"/>
         </el-form-item>
         <el-form-item label="调度策略">
           <el-select v-model="triggerInfo.strategy" placeholder="调度策略">
-            <el-option v-for="strategy in strategyList" :label="strategy.value" :value="strategy.key" />
+            <el-option v-for="strategy in strategyList" :label="strategy.value" :value="strategy.key"/>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="描述" prop="description">
+          <el-input type="textarea" v-model="triggerInfo.description"></el-input>
+        </el-form-item>
+        <el-form-item label="执行器">
+          <el-select v-model="triggerInfo.executorId" placeholder="执行器">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -170,82 +184,104 @@
 </template>
 
 <script>
-import elDragDialog from '@/directive/el-drag-dialog'
-import { getAllTrigger, addTrigger } from '@/api/trigger'
-import { parseTime } from '@/utils'
-import constant from './constant'
+  import elDragDialog from '@/directive/el-drag-dialog'
+  import { getAllTrigger, addTrigger } from '@/api/trigger'
+  import { getAllExecutorNoDetail } from '@/api/executor'
+  import { parseTime } from '@/utils'
+  import constant from './constant'
+  import commonUtils from '@/utils/commonUtils'
 
-export default {
-  name: 'Trigger',
-  directives: { elDragDialog },
-  data() {
-    return {
-      triggerRules: {
-        name: [{ required: true, message: '输入触发器名字', trigger: 'blur' }],
-        cron: [{ required: true, message: '输入cron表达式', trigger: 'blur' }],
-        shardingNum: [{ required: true, message: '输入分片数', trigger: 'blur' }, {
-          type: 'number',
-          message: '分片数必须为数字值'
-        }],
-        retryCount: [{ required: true, message: '输入重试次数', trigger: 'blur' }, {
-          type: 'number',
-          message: '重试次数必须为数字值'
-        }]
-      },
-      triggerList: [],
-      pageInfo: {
-        currentPage: 1,
-        pageSize: 10,
-        total: 0
-      },
-      dialogTableVisible: false,
-      triggerInfo: {
-        name: null,
-        cron: null,
-        strategy: 0,
-        shardingNum: 0,
-        retryCount: 0
-      },
-      strategyList: constant.strategyList,
-      strategyMap: constant.strategyMap,
-      statusMap: constant.statusMap
-    }
-  },
-  mounted() {
-    this.getTriggerList()
-  },
-  methods: {
-    pageChange(currentPage) {
-      this.pageInfo.currentPage = currentPage
+  export default {
+    name: 'Trigger',
+    directives: { elDragDialog },
+    data() {
+      return {
+        triggerRules: {
+          name: [{ required: true, message: '输入触发器名字', trigger: 'blur' }],
+          description: [{ required: true, message: '输入触发器描述信息', trigger: 'blur' }],
+          cron: [{ required: true, message: '输入cron表达式', trigger: 'blur' }],
+          shardingNum: [{ required: true, message: '输入分片数', trigger: 'blur' }, {
+            type: 'number',
+            message: '分片数必须为数字值'
+          }],
+          retryCount: [{ required: true, message: '输入重试次数', trigger: 'blur' }, {
+            type: 'number',
+            message: '重试次数必须为数字值'
+          }]
+        },
+        triggerList: [],
+        pageInfo: {
+          currentPage: 1,
+          pageSize: 10,
+          total: 0
+        },
+        dialogTableVisible: false,
+        triggerInfo: {
+          name: null,
+          cron: null,
+          strategy: 0,
+          shardingNum: 0,
+          retryCount: 0,
+          description: null,
+          executorId: null,
+          executorName: null
+        },
+        executorList: [],
+        executorMap: null,
+        strategyList: constant.strategyList,
+        strategyMap: constant.strategyMap,
+        statusMap: constant.statusMap
+      }
+    },
+    mounted() {
       this.getTriggerList()
     },
-    parseTime: parseTime,
-    getTriggerList() {
-      getAllTrigger(this.pageInfo).then(response => {
-        this.pageInfo = response.pageInfo
-        this.triggerList = response.triggerList
-      })
-    },
-    // v-el-drag-dialog onDrag callback function
-    handleDrag() {
-      this.$refs.select.blur()
-    },
-    saveTrigger() {
-      this.$refs.triggerForm.validate(valid => {
-        if (valid) {
-          addTrigger(this.triggerInfo).then(() => {
-            this.$alert('保存成功')
-            this.getTriggerList()
-            this.dialogTableVisible = false
-          })
-        } else {
-          this.$alert('表单填写错误')
-          return false
-        }
-      })
+    methods: {
+      pageChange(currentPage) {
+        this.pageInfo.currentPage = currentPage
+        this.getTriggerList()
+      },
+      parseTime: parseTime,
+      getTriggerList() {
+        getAllTrigger(this.pageInfo).then(response => {
+          this.pageInfo = response.pageInfo
+          this.triggerList = response.triggerList
+        })
+      },
+      // v-el-drag-dialog onDrag callback function
+      handleDrag() {
+        this.$refs.select.blur()
+      },
+      addTriggerInfo() {
+        //获取执行器列表
+        getAllExecutorNoDetail().then((response) => {
+          this.executorList = response
+          if (this.executorList.length == 0) {
+            this.$alert('请先添加执行器')
+            return
+          }
+          this.executorMap = commonUtils.listToMap(this.executorList)
+          this.dialogTableVisible = true
+        })
+
+      },
+      saveTrigger() {
+        this.$refs.triggerForm.validate(valid => {
+          if (valid) {
+            this.triggerInfo.executorName = this.executorMap.get(this.triggerInfo.executorId)
+            addTrigger(this.triggerInfo).then(() => {
+              this.$alert('保存成功')
+              this.getTriggerList()
+              this.dialogTableVisible = false
+            })
+          } else {
+            this.$alert('表单填写错误')
+            return false
+          }
+        })
+      }
     }
   }
-}
 </script>
 
 <style lang="scss" scoped>
