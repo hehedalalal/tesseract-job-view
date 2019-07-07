@@ -7,3 +7,12 @@ export function getAllLog(params) {
     params: params
   })
 }
+
+export function getLogCount(params) {
+  return request({
+    url: '/tesseract-log/getLogCount',
+    method: 'get',
+    params: params
+  })
+}
+
