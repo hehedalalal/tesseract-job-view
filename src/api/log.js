@@ -16,3 +16,10 @@ export function getLogCount(params) {
   })
 }
 
+export function statisticsLog(params) {
+  return request({
+    url: '/tesseract-log/statisticsLog',
+    method: 'get',
+    params: params
+  })
+}

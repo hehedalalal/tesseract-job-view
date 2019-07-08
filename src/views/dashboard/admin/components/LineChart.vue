@@ -1,5 +1,5 @@
 <template>
-  <div :class="className" :style="{height:height,width:width}" />
+  <div :class="className" :style="{height:height,width:width}"/>
 </template>
 
 <script>
@@ -62,10 +62,10 @@ export default {
       this.chart = echarts.init(this.$el, 'macarons')
       this.setOptions(this.chartData)
     },
-    setOptions({ expectedData, actualData } = {}) {
+    setOptions({ expectedData, actualData, xAxisData } = {}) {
       this.chart.setOption({
         xAxis: {
-          data: ['周一', '周二', '周三', '周四', '周五', '周六', '周天'],
+          data: xAxisData,
           boundaryGap: false,
           axisTick: {
             show: false
