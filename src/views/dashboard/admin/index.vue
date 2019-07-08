@@ -5,56 +5,56 @@
     <panel-group @handleSetLineChartData="handleSetLineChartData"/>
 
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <line-chart :chart-data="lineChartData"/>
+      <line-chart :-data="lineChartData"/>
     </el-row>
 
     <el-row :gutter="32">
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <raddar-chart/>
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
+      <!--<el-col :xs="24" :sm="24" :lg="8">-->
+      <!--<div class="chart-wrapper">-->
+      <!--<raddar-chart/>-->
+      <!--</div>-->
+      <!--</el-col>-->
+      <el-col :xs="24" :sm="24" :lg="12">
         <div class="chart-wrapper">
           <pie-chart/>
         </div>
       </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
+      <el-col :xs="24" :sm="24" :lg="12">
         <div class="chart-wrapper">
           <bar-chart/>
         </div>
       </el-col>
     </el-row>
 
-    <el-row :gutter="8">
-      <el-col
-        :xs="{span: 24}"
-        :sm="{span: 24}"
-        :md="{span: 24}"
-        :lg="{span: 12}"
-        :xl="{span: 12}"
-        style="padding-right:8px;margin-bottom:30px;">
-        <transaction-table/>
-      </el-col>
-      <el-col
-        :xs="{span: 24}"
-        :sm="{span: 12}"
-        :md="{span: 12}"
-        :lg="{span: 6}"
-        :xl="{span: 6}"
-        style="margin-bottom:30px;">
-        <todo-list/>
-      </el-col>
-      <el-col
-        :xs="{span: 24}"
-        :sm="{span: 12}"
-        :md="{span: 12}"
-        :lg="{span: 6}"
-        :xl="{span: 6}"
-        style="margin-bottom:30px;">
-        <box-card/>
-      </el-col>
-    </el-row>
+    <!--<el-row :gutter="8">-->
+    <!--<el-col-->
+    <!--:xs="{span: 24}"-->
+    <!--:sm="{span: 24}"-->
+    <!--:md="{span: 24}"-->
+    <!--:lg="{span: 12}"-->
+    <!--:xl="{span: 12}"-->
+    <!--style="padding-right:8px;margin-bottom:30px;">-->
+    <!--<transaction-table/>-->
+    <!--</el-col>-->
+    <!--<el-col-->
+    <!--:xs="{span: 24}"-->
+    <!--:sm="{span: 12}"-->
+    <!--:md="{span: 12}"-->
+    <!--:lg="{span: 6}"-->
+    <!--:xl="{span: 6}"-->
+    <!--style="margin-bottom:30px;">-->
+    <!--<todo-list/>-->
+    <!--</el-col>-->
+    <!--<el-col-->
+    <!--:xs="{span: 24}"-->
+    <!--:sm="{span: 12}"-->
+    <!--:md="{span: 12}"-->
+    <!--:lg="{span: 6}"-->
+    <!--:xl="{span: 6}"-->
+    <!--style="margin-bottom:30px;">-->
+    <!--<box-card/>-->
+    <!--</el-col>-->
+    <!--</el-row>-->
   </div>
 </template>
 
@@ -70,17 +70,21 @@ import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
 import { statisticsLog } from '@/api/log'
 
-const xAxisData = []
+let xAxisData = []
 const lineChartData = {
   newVisitis: {
-    expectedData: [0, 0, 0, 0, 0, 0, 0],
-    actualData: [0, 0, 0, 0, 0, 0, 0],
-    xAxisData: xAxisData
+    showNameData_1: [0, 0, 0, 0, 0, 0, 0],
+    showNameData_2: [0, 0, 0, 0, 0, 0, 0],
+    xAxisData: xAxisData,
+    showName_1: '成功',
+    showName_2: '失败'
   },
   log: {
-    expectedData: [0, 10, 0, 0, 0, 0, 0],
-    actualData: [0, 0, 0, 0, 0, 0, 0],
-    xAxisData: xAxisData
+    showNameData_1: [0, 10, 0, 0, 0, 0, 0],
+    showNameData_2: [0, 0, 0, 0, 0, 0, 0],
+    xAxisData: xAxisData,
+    showName_1: '成功',
+    showName_2: '失败'
   },
   purchases: {
     expectedData: [0, 0, 0, 0, 0, 0, 0],
@@ -109,6 +113,7 @@ export default {
   },
   mounted() {
     // 往前七天
+    xAxisData = []
     let startDate = new Date(new Date() + 7 * 24 * 3600 * 1000)
     for (let i = 0; i < 7; i++) {
       const tmpDate = new Date(startDate - 1 * 24 * 3600 * 1000)
@@ -121,8 +126,8 @@ export default {
 
     // 获取日志统计
     statisticsLog().then(response => {
-      lineChartData.log.expectedData = response['success']
-      lineChartData.log.actualData = response['fail']
+      lineChartData.log.showNameData_1 = response['success']
+      lineChartData.log.showNameData_2 = response['fail']
     })
   },
   methods: {

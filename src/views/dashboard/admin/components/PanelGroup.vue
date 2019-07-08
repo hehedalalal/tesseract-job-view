@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="40" class="panel-group">
-    <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
+    <el-col :xs="12" :sm="12" :lg="12" class="card-panel-col">
       <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
         <div class="card-panel-icon-wrapper icon-people">
           <svg-icon icon-class="peoples" class-name="card-panel-icon"/>
@@ -13,7 +13,7 @@
         </div>
       </div>
     </el-col>
-    <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
+    <el-col :xs="12" :sm="12" :lg="12" class="card-panel-col">
       <div class="card-panel" @click="handleSetLineChartData('log')">
         <div class="card-panel-icon-wrapper icon-message">
           <svg-icon icon-class="message" class-name="card-panel-icon"/>
@@ -26,19 +26,19 @@
         </div>
       </div>
     </el-col>
-    <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('purchases')">
-        <div class="card-panel-icon-wrapper icon-money">
-          <svg-icon icon-class="money" class-name="card-panel-icon"/>
-        </div>
-        <div class="card-panel-description">
-          <div class="card-panel-text">
-            总执行任务数
-          </div>
-          <count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num"/>
-        </div>
-      </div>
-    </el-col>
+    <!--<el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">-->
+    <!--<div class="card-panel" @click="handleSetLineChartData('purchases')">-->
+    <!--<div class="card-panel-icon-wrapper icon-money">-->
+    <!--<svg-icon icon-class="money" class-name="card-panel-icon"/>-->
+    <!--</div>-->
+    <!--<div class="card-panel-description">-->
+    <!--<div class="card-panel-text">-->
+    <!--总执行任务数-->
+    <!--</div>-->
+    <!--<count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num"/>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</el-col>-->
     <!--<el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">-->
     <!--<div class="card-panel" @click="handleSetLineChartData('shoppings')">-->
     <!--<div class="card-panel-icon-wrapper icon-shopping">-->
@@ -56,32 +56,32 @@
 </template>
 
 <script>
-  import CountTo from 'vue-count-to'
-  import { getLogCount } from '@/api/log'
+import CountTo from 'vue-count-to'
+import { getLogCount } from '@/api/log'
 
-  export default {
-    data() {
-      return {
-        logCount: 0
-      }
+export default {
+  components: {
+    CountTo
+  },
+  data() {
+    return {
+      logCount: 0
+    }
+  },
+  created() {
+    this.getLogCount()
+  },
+  methods: {
+    getLogCount() {
+      getLogCount().then(response => {
+        this.logCount = response
+      })
     },
-    components: {
-      CountTo
-    },
-    created() {
-      this.getLogCount()
-    },
-    methods: {
-      getLogCount() {
-        getLogCount().then(response => {
-          this.logCount = response
-        })
-      },
-      handleSetLineChartData(type) {
-        this.$emit('handleSetLineChartData', type)
-      }
+    handleSetLineChartData(type) {
+      this.$emit('handleSetLineChartData', type)
     }
   }
+}
 </script>
 
 <style lang="scss" scoped>
