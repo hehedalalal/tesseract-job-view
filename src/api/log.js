@@ -16,9 +16,16 @@ export function getLogCount(params) {
   })
 }
 
-export function statisticsLog(params) {
+export function statisticsLogLine(params) {
   return request({
-    url: '/tesseract-log/statisticsLog',
+    url: '/tesseract-log/statisticsLogLine',
+    method: 'get',
+    params: params
+  })
+}
+export function statisticsLogPie(params) {
+  return request({
+    url: '/tesseract-log/statisticsLogPie',
     method: 'get',
     params: params
   })

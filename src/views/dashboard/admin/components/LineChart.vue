@@ -96,9 +96,9 @@ export default {
         series: [{
           name: showName_1, itemStyle: {
             normal: {
-              color: '#01ff25',
+              color: '#05dc90',
               lineStyle: {
-                color: '#01ff25',
+                color: '#05dc90',
                 width: 2
               }
             }

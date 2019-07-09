@@ -16,12 +16,12 @@
       <!--</el-col>-->
       <el-col :xs="24" :sm="24" :lg="12">
         <div class="chart-wrapper">
-          <pie-chart/>
+          <pie-chart :chart-data="pieChartData"/>
         </div>
       </el-col>
       <el-col :xs="24" :sm="24" :lg="12">
         <div class="chart-wrapper">
-          <bar-chart/>
+          <bar-chart :chart-data="barChartData"/>
         </div>
       </el-col>
     </el-row>
@@ -68,7 +68,7 @@ import BarChart from './components/BarChart'
 import TransactionTable from './components/TransactionTable'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
-import { statisticsLog } from '@/api/log'
+import { statisticsLogLine, statisticsLogPie } from '@/api/log'
 import { statisticsUser } from '@/api/user'
 
 const xAxisData = []
@@ -97,6 +97,21 @@ const lineChartData = {
     showName_2: '失败'
   }
 }
+const pieChartData = {
+  log: {
+    showNameList: ['成功', '失败', '执行中', '未收到执行器确认'],
+    name: '日志分析饼图',
+    dataList: []
+  }
+}
+const animationDuration = 6000
+const barChartData = {
+  log: {
+    showNameList: xAxisData,
+    name: '日志分析柱形图',
+    dataList: []
+  }
+}
 
 export default {
   name: 'DashboardAdmin',
@@ -113,14 +128,55 @@ export default {
   },
   data() {
     return {
-      lineChartData: lineChartData.user
+      lineChartData: lineChartData.user,
+      pieChartData: pieChartData.log,
+      barChartData: barChartData.log
     }
   },
   mounted() {
     // 获取日志统计
-    statisticsLog().then(response => {
+    statisticsLogLine().then(response => {
       lineChartData.log.showNameData_1 = response['success']
       lineChartData.log.showNameData_2 = response['fail']
+
+      barChartData.log.dataList.push({
+        name: '成功',
+        type: 'bar',
+        stack: 'vistors',
+        barWidth: '60%',
+        data: response['success'],
+        itemStyle: { color: '#05dc90' },
+        animationDuration
+      }, {
+        name: '失败',
+        type: 'bar',
+        stack: 'vistors',
+        barWidth: '60%',
+        data: response['fail'],
+        itemStyle: { color: '#DC143C' },
+        animationDuration
+      })
+    })
+    // 获取日志饼图
+    statisticsLogPie().then(response => {
+      for (const data of response) {
+        switch (data.name) {
+          // {value: 320, name: '成功', itemStyle: {color: '#DC143C'}}
+          case '成功':
+            data.itemStyle = { color: '#05dc90' }
+            break
+          case '失败':
+            data.itemStyle = { color: '#DC143C' }
+            break
+          case '执行中':
+            data.itemStyle = { color: '#dc409e' }
+            break
+          case '未收到执行器确认':
+            data.itemStyle = { color: '#dcd324' }
+            break
+        }
+      }
+      pieChartData.log.dataList = response
     })
     // 获取用户统计
     statisticsUser().then(response => {
