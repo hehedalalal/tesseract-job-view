@@ -5,7 +5,7 @@
     <panel-group @handleSetLineChartData="handleSetLineChartData"/>
 
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <line-chart :-data="lineChartData"/>
+      <line-chart :chart-data="lineChartData"/>
     </el-row>
 
     <el-row :gutter="32">
@@ -69,27 +69,32 @@ import TransactionTable from './components/TransactionTable'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
 import { statisticsLog } from '@/api/log'
+import { statisticsUser } from '@/api/user'
 
-let xAxisData = []
+const xAxisData = []
+// 往前七天
+let startDate = new Date(new Date() + 6 * 24 * 3600 * 1000)
+for (let i = 0; i < 7; i++) {
+  const m = startDate.getMonth() + 1
+  const d = startDate.getDate()
+  const dateStr = m + '-' + d
+  xAxisData.unshift(dateStr)
+  startDate = new Date(startDate - 1 * 24 * 3600 * 1000)
+}
 const lineChartData = {
-  newVisitis: {
+  user: {
+    showNameData_1: [0, 0, 0, 0, 0, 0, 0],
+    showNameData_2: [0, 0, 0, 0, 0, 0, 0],
+    xAxisData: xAxisData,
+    showName_1: '活跃用户',
+    showName_2: ''
+  },
+  log: {
     showNameData_1: [0, 0, 0, 0, 0, 0, 0],
     showNameData_2: [0, 0, 0, 0, 0, 0, 0],
     xAxisData: xAxisData,
     showName_1: '成功',
     showName_2: '失败'
-  },
-  log: {
-    showNameData_1: [0, 10, 0, 0, 0, 0, 0],
-    showNameData_2: [0, 0, 0, 0, 0, 0, 0],
-    xAxisData: xAxisData,
-    showName_1: '成功',
-    showName_2: '失败'
-  },
-  purchases: {
-    expectedData: [0, 0, 0, 0, 0, 0, 0],
-    actualData: [0, 0, 0, 0, 0, 0, 0],
-    xAxisData: xAxisData
   }
 }
 
@@ -108,26 +113,18 @@ export default {
   },
   data() {
     return {
-      lineChartData: lineChartData.newVisitis
+      lineChartData: lineChartData.user
     }
   },
   mounted() {
-    // 往前七天
-    xAxisData = []
-    let startDate = new Date(new Date() + 7 * 24 * 3600 * 1000)
-    for (let i = 0; i < 7; i++) {
-      const tmpDate = new Date(startDate - 1 * 24 * 3600 * 1000)
-      const m = tmpDate.getMonth() + 1
-      const d = tmpDate.getDate()
-      const dateStr = m + '-' + d
-      xAxisData.unshift(dateStr)
-      startDate = tmpDate
-    }
-
     // 获取日志统计
     statisticsLog().then(response => {
       lineChartData.log.showNameData_1 = response['success']
       lineChartData.log.showNameData_2 = response['fail']
+    })
+    // 获取用户统计
+    statisticsUser().then(response => {
+      lineChartData.user.showNameData_1 = response
     })
   },
   methods: {

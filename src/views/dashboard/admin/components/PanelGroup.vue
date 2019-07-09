@@ -1,7 +1,7 @@
 <template>
   <el-row :gutter="40" class="panel-group">
     <el-col :xs="12" :sm="12" :lg="12" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
+      <div class="card-panel" @click="handleSetLineChartData('user')">
         <div class="card-panel-icon-wrapper icon-people">
           <svg-icon icon-class="peoples" class-name="card-panel-icon"/>
         </div>
@@ -9,7 +9,7 @@
           <div class="card-panel-text">
             用户数
           </div>
-          <count-to :start-val="0" :end-val="102400" :duration="2600" class="card-panel-num"/>
+          <count-to :start-val="0" :end-val="userCount" :duration="2000" class="card-panel-num"/>
         </div>
       </div>
     </el-col>
@@ -22,42 +22,17 @@
           <div class="card-panel-text">
             日志数
           </div>
-          <count-to :start-val="0" :end-val="logCount" :duration="3000" class="card-panel-num"/>
+          <count-to :start-val="0" :end-val="logCount" :duration="2000" class="card-panel-num"/>
         </div>
       </div>
     </el-col>
-    <!--<el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">-->
-    <!--<div class="card-panel" @click="handleSetLineChartData('purchases')">-->
-    <!--<div class="card-panel-icon-wrapper icon-money">-->
-    <!--<svg-icon icon-class="money" class-name="card-panel-icon"/>-->
-    <!--</div>-->
-    <!--<div class="card-panel-description">-->
-    <!--<div class="card-panel-text">-->
-    <!--总执行任务数-->
-    <!--</div>-->
-    <!--<count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num"/>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</el-col>-->
-    <!--<el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">-->
-    <!--<div class="card-panel" @click="handleSetLineChartData('shoppings')">-->
-    <!--<div class="card-panel-icon-wrapper icon-shopping">-->
-    <!--<svg-icon icon-class="shopping" class-name="card-panel-icon"/>-->
-    <!--</div>-->
-    <!--<div class="card-panel-description">-->
-    <!--<div class="card-panel-text">-->
-    <!--Shoppings-->
-    <!--</div>-->
-    <!--<count-to :start-val="0" :end-val="13600" :duration="3600" class="card-panel-num"/>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</el-col>-->
   </el-row>
 </template>
 
 <script>
 import CountTo from 'vue-count-to'
 import { getLogCount } from '@/api/log'
+import { getUserCount } from '@/api/user'
 
 export default {
   components: {
@@ -65,16 +40,23 @@ export default {
   },
   data() {
     return {
-      logCount: 0
+      logCount: 0,
+      userCount: 0
     }
   },
   created() {
     this.getLogCount()
+    this.getUserCount()
   },
   methods: {
     getLogCount() {
       getLogCount().then(response => {
         this.logCount = response
+      })
+    },
+    getUserCount() {
+      getUserCount().then(response => {
+        this.userCount = response
       })
     },
     handleSetLineChartData(type) {

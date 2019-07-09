@@ -14,6 +14,7 @@ export function logout() {
     method: 'post'
   })
 }
+
 export function getAllUser(params) {
   return request({
     url: '/tesseract-user/userList',
@@ -22,10 +23,26 @@ export function getAllUser(params) {
   })
 }
 
-export function addTrigger(data) {
+export function addUser(data) {
   return request({
     url: '/tesseract-user/addUser',
     method: 'post',
     data: data
+  })
+}
+
+export function statisticsUser(params) {
+  return request({
+    url: '/tesseract-user/statisticsUser',
+    method: 'get',
+    params: params
+  })
+}
+
+export function getUserCount(params) {
+  return request({
+    url: '/tesseract-user/getUserCount',
+    method: 'get',
+    params: params
   })
 }
