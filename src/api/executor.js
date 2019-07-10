@@ -23,3 +23,11 @@ export function addExecutor(data) {
     data: data
   })
 }
+
+export function deleteExecutor(data) {
+  return request({
+    url: '/tesseract-executor/deleteExecutor',
+    method: 'get',
+    params: data
+  })
+}

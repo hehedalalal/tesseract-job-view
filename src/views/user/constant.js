@@ -1,6 +1,7 @@
 import commonUtils from '@/utils/commonUtils'
 
-const userStatusList = [{ key: 0, value: '启用' }, { key: 1, value: '禁用用' }]
+const statusList = [{ key: null, value: '全部' }, { key: 0, value: '禁用' }, { key: 1, value: '启用' }]
 export default {
-  statusMap: commonUtils.listToMap(userStatusList)
+  statusList: statusList,
+  statusMap: commonUtils.listToMap(statusList)
 }

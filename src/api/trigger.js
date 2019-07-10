@@ -15,3 +15,35 @@ export function addTrigger(data) {
     data: data
   })
 }
+
+export function deleteTrigger(data) {
+  return request({
+    url: '/tesseract-trigger/delete',
+    method: 'get',
+    params: data
+  })
+}
+
+export function executeTrigger(data) {
+  return request({
+    url: '/tesseract-trigger/execute',
+    method: 'get',
+    params: data
+  })
+}
+
+export function startTrigger(data) {
+  return request({
+    url: '/tesseract-trigger/start',
+    method: 'get',
+    params: data
+  })
+}
+
+export function stopTrigger(data) {
+  return request({
+    url: '/tesseract-trigger/stop',
+    method: 'get',
+    params: data
+  })
+}

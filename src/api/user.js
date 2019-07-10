@@ -46,3 +46,35 @@ export function getUserCount(params) {
     params: params
   })
 }
+
+export function passwordRevert(params) {
+  return request({
+    url: '/tesseract-user/passwordRevert',
+    method: 'get',
+    params: params
+  })
+}
+
+export function validUser(params) {
+  return request({
+    url: '/tesseract-user/validUser',
+    method: 'get',
+    params: params
+  })
+}
+
+export function invalidUser(params) {
+  return request({
+    url: '/tesseract-user/invalidUser',
+    method: 'get',
+    params: params
+  })
+}
+
+export function deleteUser(params) {
+  return request({
+    url: '/tesseract-user/deleteUser',
+    method: 'get',
+    params: params
+  })
+}
