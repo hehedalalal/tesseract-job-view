@@ -93,9 +93,21 @@ const actions = {
           reject('getInfo: roles must be a non-null array!')
         }
 
-        // 定义一个空数组，这个是用来装真正路由数据的
+        /*
+        菜单实体类字段:
+          name          菜单名称
+          path          路径
+          url_parttern  路径匹配模式
+          redirect      默认转发地址
+          level         菜单级别
+          title         前端显示名称
+          icon          图标
+          alwaysShow    是否一直显示
+         */
 
-        /* const menuRouters = [
+        /*
+        模拟数据
+        const menuRouters = [
           {
             path: '/permission',
             component: Layout,
@@ -132,34 +144,24 @@ const actions = {
           // 404 page must be placed at the end !!!
           { path: '*', redirect: '/404', hidden: true }
         ]*/
-
+        // 存放路由数据
         const menuRouters = []
-
+        // 获取一级菜单路由
         menuList.forEach((m, i) => {
           if (m.parentId == null || m.parentId === 0) {
             m.fullPath = '/' + m.path
             const module = {
               path: '/' + m.path,
               component: Layout,
-              redirect: '/permission/page',
+              redirect: '/permission/page', // 后端返回，可配置
               alwaysShow: true,
-              meta: { id: m.id, title: m.name, fullPath: '/' + m.path },
-              children: [
-                {
-                  path: '',
-                  component: () => import('@/views/' + m.path + '/index'),
-                  meta: {
-                    menuHide: true,
-                    title: m.name
-                  }
-                }
-              ]
+              meta: { id: m.id, title: m.name, fullPath: '/' + m.path }
             }
             menuRouters.push(module)
           }
         })
 
-        // 定义一个递归方法
+        // 定义递归方法
         function convertTree(routers) {
           routers.forEach(r => {
             menuList.forEach((m, i) => {
@@ -168,36 +170,21 @@ const actions = {
                 m.fullPath = r.meta.fullPath + '/' + m.path
                 const menu = {
                   path: m.path,
-                  component: () => import('@/views' + r.meta.fullPath + '/' + m.path),
+                  // 注意: webpack 编译es6 动态引入 import() 时不能传入变量。需要字符串模板。坑
+                  component: () => import(`@/views${m.fullPath}`),
                   meta: { id: m.id, title: m.name, fullPath: r.meta.fullPath + '/' + m.path }
                 }
                 r.children.push(menu)
               }
             })
-            // if (r.children) convertTree(r.children)
+            if (r.children) convertTree(r.children)
           })
         }
 
+        // 递归填充
+        convertTree(menuRouters)
 
-
-        // 用递归填充
-        // convertTree(menuRouters)
-
-        menuRouters.forEach(r => {
-          menuList.forEach((m, i) => {
-            if (m.parentId && m.parentId === r.meta.id) {
-              if (!r.children) r.children = []
-              m.fullPath = r.meta.fullPath + '/' + m.path
-              const menu = {
-                path: m.path,
-                component: () => import('@/views' + r.meta.fullPath + '/' + m.path),
-                meta: { id: m.id, title: m.name, fullPath: r.meta.fullPath + '/' + m.path }
-              }
-              r.children.push(menu)
-            }
-          })
-        })
-
+        /* 调试代码
         const routers = {
             path: '/icon',
             component: Layout,
@@ -209,10 +196,9 @@ const actions = {
                 meta: { title: 'Icons', icon: 'icon', noCache: true }
               }
             ]
-        };
-        menuRouters.push(routers)
+        }
+        menuRouters.push(routers)*/
         console.info(menuRouters)
-
         commit('SET_USERROUTERS', menuRouters)
         commit('SET_BUTTONS', btnList)
         commit('SET_ROLES', roles)
