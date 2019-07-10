@@ -4,9 +4,9 @@
       Your roles: {{ roles }}
     </div>
     Switch roles:
-    <el-radio-group v-model="switchRoles">
-      <el-radio-button label="editor" />
-      <el-radio-button label="admin" />
+    <el-radio-group  v-model="switchRoles">
+      <el-radio-button v-if="$store.getters.buttons.includes('/permission/del')" label="editor" />
+      <el-radio-button v-if="$store.getters.buttons.includes('/permission/add')" label="admin" />
     </el-radio-group>
   </div>
 </template>

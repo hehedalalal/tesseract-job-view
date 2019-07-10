@@ -8,6 +8,15 @@ export function login(data) {
   })
 }
 
+// 根据 token 获取用户权限信息
+export function getUserAuthInfo(data) {
+  return request({
+    url: '/tesseract-user/getUserAuthInfo',
+    method: 'post',
+    data
+  })
+}
+
 export function logout() {
   return request({
     url: '/tesseract-user/logout',

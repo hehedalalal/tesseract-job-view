@@ -18,7 +18,7 @@
           <el-button type="primary">查询</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="success" @click="dialogTableVisible=true">新增用户</el-button>
+          <el-button  type="success" @click="dialogTableVisible=true">新增用户</el-button>
         </el-form-item>
       </el-form>
     </el-row>

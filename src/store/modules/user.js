@@ -1,6 +1,11 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, logout, getUserAuthInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
+import Layout from '@/layout'
+import chartsRouter from "../../router/modules/charts";
+import nestedRouter from "../../router/modules/nested";
+import tableRouter from "../../router/modules/table";
+import componentsRouter from '../../router/modules/components'
 
 const state = {
   token: getToken(),
@@ -8,7 +13,9 @@ const state = {
   avatar: '',
   introduction: '',
   roles: [],
-  userInfo: null
+  userInfo: null,
+  userRouters: [],
+  buttons: []
 }
 
 const mutations = {
@@ -29,6 +36,12 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_USERROUTERS: (state, userRouters) => {
+    state.userRouters = userRouters
+  },
+  SET_BUTTONS: (state, buttons) => {
+    state.buttons = buttons
   }
 }
 
@@ -49,42 +62,167 @@ const actions = {
     })
   },
 
+  // 获取用户信息
   // get user info
-  getInfo({ commit, state }) {
+  getUserAuthInfo({ commit, state }) {
+
     return new Promise((resolve, reject) => {
-      const userInfo = state.userInfo
-      const { roles, name, avatar, introduction } = userInfo
-      // roles must be a non-empty array
-      if (!roles || roles.length <= 0) {
-        reject('getInfo: roles must be a non-null array!')
-      }
-      commit('SET_ROLES', roles)
-      commit('SET_NAME', name)
-      commit('SET_AVATAR', avatar)
-      commit('SET_INTRODUCTION', introduction)
-      resolve(userInfo)
-      // getInfo(state.token).then(response => {
-      //   const { data } = response
-      //
-      //   if (!data) {
-      //     reject('Verification failed, please Login again.')
-      //   }
-      //
-      //   const { roles, name, avatar, introduction } = data
-      //
-      //   // roles must be a non-empty array
-      //   if (!roles || roles.length <= 0) {
-      //     reject('getInfo: roles must be a non-null array!')
-      //   }
-      //
-      //   commit('SET_ROLES', roles)
-      //   commit('SET_NAME', name)
-      //   commit('SET_AVATAR', avatar)
-      //   commit('SET_INTRODUCTION', introduction)
-      //   resolve(data)
-      // }).catch(error => {
-      //   reject(error)
-      // })
+      // const userInfo = state.userInfo
+      // const { roles, name, avatar, introduction } = userInfo
+      // // roles must be a non-empty array
+      // if (!roles || roles.length <= 0) {
+      //   reject('getInfo: roles must be a non-null array!')
+      // }
+      // commit('SET_ROLES', roles)
+      // commit('SET_NAME', name)
+      // commit('SET_AVATAR', avatar)
+      // commit('SET_INTRODUCTION', introduction)
+      // resolve(userInfo)
+      // 从后端获取用的权限列表，扔在storage里
+      getUserAuthInfo(state.token).then(response => {
+
+        const userAuthInfo = response
+
+        if (!userAuthInfo) {
+          reject('Verification failed, please Login again.')
+        }
+
+        const { roles, name, avatar, introduction, menuList, btnList } = userAuthInfo
+        // roles must be a non-empty array
+        if (!roles || roles.length <= 0) {
+          reject('getInfo: roles must be a non-null array!')
+        }
+
+        // 定义一个空数组，这个是用来装真正路由数据的
+
+        /* const menuRouters = [
+          {
+            path: '/permission',
+            component: Layout,
+            redirect: '/permission/page',
+            alwaysShow: true, // will always show the root menu
+            name: 'Permission12121212',
+            meta: {
+              title: 'Permission121211212'
+              // icon: 'lock'
+              // roles: ['admin', 'editor'] // you can set roles in root nav
+            },
+            children: [
+              {
+                path: 'page',
+                component: () => import('@/views/permission/page'),
+                name: 'PagePermission',
+                meta: {
+                  title: 'PagePermission',
+                  fullPath:'/',
+                  // roles: ['admin'] // or you can only set roles in sub nav
+                }
+              },
+              {
+                path: 'directive',
+                component: () => import('@/views/permission/directive'),
+                name: 'DirectivePermission',
+                meta: {
+                  title: 'DirectivePermission'
+                  // if do not set roles, means: this page does not require permission
+                }
+              }
+            ]
+          },
+          // 404 page must be placed at the end !!!
+          { path: '*', redirect: '/404', hidden: true }
+        ]*/
+
+        const menuRouters = []
+
+        menuList.forEach((m, i) => {
+          if (m.parentId == null || m.parentId === 0) {
+            m.fullPath = '/' + m.path
+            const module = {
+              path: '/' + m.path,
+              component: Layout,
+              redirect: '/permission/page',
+              alwaysShow: true,
+              meta: { id: m.id, title: m.name, fullPath: '/' + m.path },
+              children: [
+                {
+                  path: '',
+                  component: () => import('@/views/' + m.path + '/index'),
+                  meta: {
+                    menuHide: true,
+                    title: m.name
+                  }
+                }
+              ]
+            }
+            menuRouters.push(module)
+          }
+        })
+
+        // 定义一个递归方法
+        function convertTree(routers) {
+          routers.forEach(r => {
+            menuList.forEach((m, i) => {
+              if (m.parentId && m.parentId === r.meta.id) {
+                if (!r.children) r.children = []
+                m.fullPath = r.meta.fullPath + '/' + m.path
+                const menu = {
+                  path: m.path,
+                  component: () => import('@/views' + r.meta.fullPath + '/' + m.path),
+                  meta: { id: m.id, title: m.name, fullPath: r.meta.fullPath + '/' + m.path }
+                }
+                r.children.push(menu)
+              }
+            })
+            // if (r.children) convertTree(r.children)
+          })
+        }
+
+
+
+        // 用递归填充
+        // convertTree(menuRouters)
+
+        menuRouters.forEach(r => {
+          menuList.forEach((m, i) => {
+            if (m.parentId && m.parentId === r.meta.id) {
+              if (!r.children) r.children = []
+              m.fullPath = r.meta.fullPath + '/' + m.path
+              const menu = {
+                path: m.path,
+                component: () => import('@/views' + r.meta.fullPath + '/' + m.path),
+                meta: { id: m.id, title: m.name, fullPath: r.meta.fullPath + '/' + m.path }
+              }
+              r.children.push(menu)
+            }
+          })
+        })
+
+        const routers = {
+            path: '/icon',
+            component: Layout,
+            children: [
+              {
+                path: 'index',
+                component: () => import('@/views/icons/index'),
+                name: 'Icons',
+                meta: { title: 'Icons', icon: 'icon', noCache: true }
+              }
+            ]
+        };
+        menuRouters.push(routers)
+        console.info(menuRouters)
+
+        commit('SET_USERROUTERS', menuRouters)
+        commit('SET_BUTTONS', btnList)
+        commit('SET_ROLES', roles)
+        commit('SET_NAME', name)
+        commit('SET_AVATAR', avatar)
+        commit('SET_INTRODUCTION', introduction)
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
     })
   },
 
