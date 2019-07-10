@@ -8,6 +8,9 @@
         <el-form-item label="执行器名">
           <el-input v-model="selectInfo.executorName" placeholder="执行器名"/>
         </el-form-item>
+        <el-form-item label="所属组">
+          <el-input v-model="selectInfo.groupName" placeholder="所属组"/>
+        </el-form-item>
         <el-form-item label="任务描述">
           <el-input v-model="selectInfo.description" placeholder="任务描述"/>
         </el-form-item>
@@ -91,7 +94,11 @@
             <span>{{ scope.row.createTime==0 ? '': parseTime(scope.row.createTime) }}</span>
           </template>
         </el-table-column>
-
+        <el-table-column align="center" label="所属组">
+          <template slot-scope="scope">
+            <span>{{ scope.row.groupName }}</span>
+          </template>
+        </el-table-column>
         <el-table-column align="center" label="操作" width="440">
           <template slot-scope="scope">
             <el-button
@@ -187,137 +194,137 @@
 </template>
 
 <script>
-import elDragDialog from '@/directive/el-drag-dialog'
-import {
-  getAllTrigger, addTrigger, deleteTrigger, executeTrigger, startTrigger, stopTrigger
-} from '@/api/trigger'
-import { getAllExecutorNoDetail } from '@/api/executor'
-import { parseTime } from '@/utils'
-import constant from './constant'
-import commonUtils from '@/utils/commonUtils'
+  import elDragDialog from '@/directive/el-drag-dialog'
+  import {
+    getAllTrigger, addTrigger, deleteTrigger, executeTrigger, startTrigger, stopTrigger
+  } from '@/api/trigger'
+  import {getAllExecutorNoDetail} from '@/api/executor'
+  import {parseTime} from '@/utils'
+  import constant from './constant'
+  import commonUtils from '@/utils/commonUtils'
 
-export default {
-  name: 'Trigger',
-  directives: { elDragDialog },
-  data() {
-    return {
-      triggerRules: {
-        name: [{ required: true, message: '输入触发器名字', trigger: 'blur' }],
-        description: [{ required: true, message: '输入触发器描述信息', trigger: 'blur' }],
-        cron: [{ required: true, message: '输入cron表达式', trigger: 'blur' }],
-        shardingNum: [{ required: true, message: '输入分片数', trigger: 'blur' }, {
-          type: 'number',
-          message: '分片数必须为数字值'
-        }],
-        retryCount: [{ required: true, message: '输入重试次数', trigger: 'blur' }, {
-          type: 'number',
-          message: '重试次数必须为数字值'
-        }],
-        strategy: [{ required: true, message: '请选择策略', trigger: 'blur' }],
-        executor: [{ required: true, message: '请选择执行器', trigger: 'blur' }]
-      },
-      triggerList: [],
-      selectInfo: {
-        currentPage: 1,
-        pageSize: 10,
-        total: 0,
-        status: null
-      },
-      dialogTableVisible: false,
-      triggerInfo: {
-        name: null,
-        cron: null,
-        strategy: 0,
-        shardingNum: 0,
-        retryCount: 0,
-        description: null,
-        executorId: null,
-        executorName: null
-      },
-      listLoading: false,
-      executorList: [],
-      executorMap: null,
-      strategyList: constant.strategyList,
-      strategyMap: constant.strategyMap,
-      statusMap: constant.statusMap,
-      statusList: constant.statusList
-    }
-  },
-  mounted() {
-    this.getTriggerList()
-  },
-  methods: {
-    pageChange(currentPage) {
-      this.selectInfo.currentPage = currentPage
+  export default {
+    name: 'Trigger',
+    directives: {elDragDialog},
+    data() {
+      return {
+        triggerRules: {
+          name: [{required: true, message: '输入触发器名字', trigger: 'blur'}],
+          description: [{required: true, message: '输入触发器描述信息', trigger: 'blur'}],
+          cron: [{required: true, message: '输入cron表达式', trigger: 'blur'}],
+          shardingNum: [{required: true, message: '输入分片数', trigger: 'blur'}, {
+            type: 'number',
+            message: '分片数必须为数字值'
+          }],
+          retryCount: [{required: true, message: '输入重试次数', trigger: 'blur'}, {
+            type: 'number',
+            message: '重试次数必须为数字值'
+          }],
+          strategy: [{required: true, message: '请选择策略', trigger: 'blur'}],
+          executor: [{required: true, message: '请选择执行器', trigger: 'blur'}]
+        },
+        triggerList: [],
+        selectInfo: {
+          currentPage: 1,
+          pageSize: 10,
+          total: 0,
+          status: null
+        },
+        dialogTableVisible: false,
+        triggerInfo: {
+          name: null,
+          cron: null,
+          strategy: 0,
+          shardingNum: 0,
+          retryCount: 0,
+          description: null,
+          executorId: null,
+          executorName: null
+        },
+        listLoading: false,
+        executorList: [],
+        executorMap: null,
+        strategyList: constant.strategyList,
+        strategyMap: constant.strategyMap,
+        statusMap: constant.statusMap,
+        statusList: constant.statusList
+      }
+    },
+    mounted() {
       this.getTriggerList()
     },
-    parseTime: parseTime,
-    getTriggerList() {
-      getAllTrigger(this.selectInfo).then(response => {
-        this.selectInfo = response.pageInfo
-        this.triggerList = response.triggerList
-      })
-    },
-    // v-el-drag-dialog onDrag callback function
-    handleDrag() {
-      this.$refs.select.blur()
-    },
-    addTriggerInfo() {
-      // 获取执行器列表
-      getAllExecutorNoDetail().then((response) => {
-        this.executorList = response
-        if (this.executorList.length == 0) {
-          this.$alert('请先添加执行器')
-          return
-        }
-        this.executorMap = commonUtils.listToMap(this.executorList)
-        this.dialogTableVisible = true
-      })
-    },
-    saveTrigger() {
-      this.$refs.triggerForm.validate(valid => {
-        if (valid) {
-          this.triggerInfo.executorName = this.executorMap.get(this.triggerInfo.executorId)
-          addTrigger(this.triggerInfo).then(() => {
-            this.$alert('保存成功')
-            this.getTriggerList()
-            this.dialogTableVisible = false
-          })
-        } else {
-          this.$alert('表单填写错误')
-          return false
-        }
-      })
-    },
-    modify(row) {
-      this.triggerInfo = row
-      this.addTriggerInfo()
-    },
-    execute(row) {
-      executeTrigger({ triggerId: row.id }).then(() => {
-        this.$alert('执行成功')
-      })
-    },
-    start(row) {
-      startTrigger({ triggerId: row.id }).then(() => {
-        this.$alert('开启成功')
+    methods: {
+      pageChange(currentPage) {
+        this.selectInfo.currentPage = currentPage
         this.getTriggerList()
-      })
-    },
-    stop(row) {
-      stopTrigger({ triggerId: row.id }).then(() => {
-        this.$alert('停止成功')
-        this.getTriggerList()
-      })
-    },
-    delete(row) {
-      deleteTrigger({ triggerId: row.id }).then(() => {
-        this.$alert('删除成功')
-        this.getTriggerList()
-      })
+      },
+      parseTime: parseTime,
+      getTriggerList() {
+        getAllTrigger(this.selectInfo).then(response => {
+          this.selectInfo = response.pageInfo
+          this.triggerList = response.triggerList
+        })
+      },
+      // v-el-drag-dialog onDrag callback function
+      handleDrag() {
+        this.$refs.select.blur()
+      },
+      addTriggerInfo() {
+        // 获取执行器列表
+        getAllExecutorNoDetail().then((response) => {
+          this.executorList = response
+          if (this.executorList.length == 0) {
+            this.$alert('请先添加执行器')
+            return
+          }
+          this.executorMap = commonUtils.listToMap(this.executorList)
+          this.dialogTableVisible = true
+        })
+      },
+      saveTrigger() {
+        this.$refs.triggerForm.validate(valid => {
+          if (valid) {
+            this.triggerInfo.executorName = this.executorMap.get(this.triggerInfo.executorId)
+            addTrigger(this.triggerInfo).then(() => {
+              this.$alert('保存成功')
+              this.getTriggerList()
+              this.dialogTableVisible = false
+            })
+          } else {
+            this.$alert('表单填写错误')
+            return false
+          }
+        })
+      },
+      modify(row) {
+        this.triggerInfo = row
+        this.addTriggerInfo()
+      },
+      execute(row) {
+        executeTrigger({groupName: row.groupName, triggerId: row.id}).then(() => {
+          this.$alert('执行成功')
+        })
+      },
+      start(row) {
+        startTrigger({triggerId: row.id}).then(() => {
+          this.$alert('开启成功')
+          this.getTriggerList()
+        })
+      },
+      stop(row) {
+        stopTrigger({triggerId: row.id}).then(() => {
+          this.$alert('停止成功')
+          this.getTriggerList()
+        })
+      },
+      delete(row) {
+        deleteTrigger({triggerId: row.id}).then(() => {
+          this.$alert('删除成功')
+          this.getTriggerList()
+        })
+      }
     }
   }
-}
 </script>
 
 <style lang="scss" scoped>
