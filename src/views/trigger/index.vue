@@ -221,7 +221,7 @@
             message: '重试次数必须为数字值'
           }],
           strategy: [{required: true, message: '请选择策略', trigger: 'blur'}],
-          executor: [{required: true, message: '请选择执行器', trigger: 'blur'}]
+          executor: [{required: false, message: '请选择执行器', trigger: 'blur'}]
         },
         triggerList: [],
         selectInfo: {
@@ -270,6 +270,7 @@
         this.$refs.select.blur()
       },
       addTriggerInfo() {
+        this.triggerInfo = {}
         // 获取执行器列表
         getAllExecutorNoDetail().then((response) => {
           this.executorList = response
@@ -283,6 +284,11 @@
       },
       saveTrigger() {
         this.$refs.triggerForm.validate(valid => {
+          //校验执行器
+          if (this.triggerInfo.executorId == null) {
+            this.$alert('请选择执行器')
+            return
+          }
           if (valid) {
             this.triggerInfo.executorName = this.executorMap.get(this.triggerInfo.executorId)
             addTrigger(this.triggerInfo).then(() => {
@@ -298,7 +304,16 @@
       },
       modify(row) {
         this.triggerInfo = row
-        this.addTriggerInfo()
+        // 获取执行器列表
+        getAllExecutorNoDetail().then((response) => {
+          this.executorList = response
+          if (this.executorList.length == 0) {
+            this.$alert('请先添加执行器')
+            return
+          }
+          this.executorMap = commonUtils.listToMap(this.executorList, 'id', 'name')
+          this.dialogTableVisible = true
+        })
       },
       execute(row) {
         executeTrigger({groupName: row.groupName, triggerId: row.id}).then(() => {

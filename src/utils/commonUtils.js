@@ -1,8 +1,14 @@
 export default {
-  listToMap: (list) => {
+  listToMap: (list, keyName, valueName) => {
     const map = new Map()
     for (const item of list) {
-      map.set(item.key, item.value)
+      if (!keyName) {
+        keyName = "key"
+      }
+      if (!valueName) {
+        valueName = "value"
+      }
+      map.set(item[keyName], item[valueName])
     }
     console.log(map)
     return map

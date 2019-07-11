@@ -203,7 +203,7 @@
         })
       },
       passwordRevert(userId) {
-        passwordRevert(userId).then(() => {
+        passwordRevert({userId: userId}).then(() => {
           this.$alert('重置成功')
         })
       },
