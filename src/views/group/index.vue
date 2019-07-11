@@ -118,7 +118,7 @@
 
 <script>
   import elDragDialog from '@/directive/el-drag-dialog'
-  import {getAllGroup, addGroup, deleteGroup} from '@/api/group'
+  import {getAllGroup, getAllGroupByPage, addGroup, deleteGroup} from '@/api/group'
   import {parseTime} from '@/utils'
   import constant from './constant'
 
@@ -159,7 +159,7 @@
       },
       parseTime: parseTime,
       getGroupList() {
-        getAllGroup(this.selectInfo).then(response => {
+        getAllGroupByPage(this.selectInfo).then(response => {
           this.selectInfo = response.pageInfo
           this.groupList = response.groupList
           this.listLoading = false

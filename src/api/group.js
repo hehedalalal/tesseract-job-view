@@ -2,6 +2,14 @@ import request from '@/utils/request'
 
 export function getAllGroup(params) {
   return request({
+    url: '/tesseract-group/allGroup',
+    method: 'get',
+    params: params
+  })
+}
+
+export function getAllGroupByPage(params) {
+  return request({
     url: '/tesseract-group/groupList',
     method: 'get',
     params: params

@@ -14,7 +14,7 @@
           <el-button type="primary" @click="getUserList">查询</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="success" @click="dialogTableVisible=true">新增用户</el-button>
+          <el-button type="success" @click="addUserBtn">新增用户</el-button>
         </el-form-item>
       </el-form>
     </el-row>
@@ -107,6 +107,11 @@
         <el-form-item label="用户名" prop="name">
           <el-input ref="name" v-model="userInfo.name" placeholder="触发器名字"/>
         </el-form-item>
+        <el-form-item label="用户组" prop="group">
+          <el-select v-model="userInfo.groupId" placeholder="用户组">
+            <el-option v-for="group in groupList" :label="group.name" :value="group.id"/>
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="saveUser">保存</el-button>
         </el-form-item>
@@ -116,93 +121,112 @@
 </template>
 
 <script>
-import elDragDialog from '@/directive/el-drag-dialog'
-import { getAllUser, addUser, passwordRevert, validUser, invalidUser, deleteUser } from '@/api/user'
-import constant from './constant'
-import { parseTime } from '@/utils'
+  import elDragDialog from '@/directive/el-drag-dialog'
+  import {getAllUser, addUser, passwordRevert, validUser, invalidUser, deleteUser} from '@/api/user'
+  import {getAllGroup} from '@/api/group'
+  import constant from './constant'
+  import {parseTime} from '@/utils'
+  import commonUtils from '@/utils/commonUtils'
 
-export default {
-  name: 'User',
-  directives: { elDragDialog },
-  data() {
-    return {
-      userRules: {
-        name: [{ required: true, message: '输入用户名', user: 'blur' }]
-      },
-      userList: [],
-      selectInfo: {
-        currentPage: 1,
-        pageSize: 10,
-        total: 0,
-        status: null
-      },
-      dialogTableVisible: false,
-      userInfo: {
-        name: null
-      },
-      statusMap: constant.statusMap,
-      statusList: constant.statusList,
-      listLoading: false
-    }
-  },
-  mounted() {
-    this.getUserList()
-  },
-  methods: {
-    parseTime: parseTime,
-    pageChange(currentPage) {
-      this.selectInfo.currentPage = currentPage
+
+  export default {
+    name: 'User',
+    directives: {elDragDialog},
+    data() {
+      return {
+        userRules: {
+          name: [{required: true, message: '输入用户名', user: 'blur'}],
+          group: [{required: true, message: '请选择用户组', trigger: 'blur'}],
+        },
+        userList: [],
+        selectInfo: {
+          currentPage: 1,
+          pageSize: 10,
+          total: 0,
+          status: null
+        },
+        dialogTableVisible: false,
+        userInfo: {
+          name: null
+        },
+        statusMap: constant.statusMap,
+        statusList: constant.statusList,
+        listLoading: false,
+        groupList: null,
+        groupMap: null
+      }
+    },
+    mounted() {
       this.getUserList()
     },
-    getUserList() {
-      getAllUser(this.selectInfo).then(response => {
-        this.selectInfo = response.pageInfo
-        this.userList = response.userList
-      })
-    },
-    // v-el-drag-dialog onDrag callback function
-    handleDrag() {
-      this.$refs.select.blur()
-    },
-    saveUser() {
-      this.$refs.userForm.validate(valid => {
-        if (valid) {
-          addUser(this.userInfo).then(() => {
-            this.$alert('保存成功,用户密码为默认密码')
-            this.getUserList()
-            this.dialogTableVisible = false
-          })
-        } else {
-          this.$alert('表单填写错误')
-          return false
-        }
-      })
-    },
-    passwordRevert(userId) {
-      passwordRevert(userId).then(() => {
-        this.$alert('重置成功')
-      })
-    },
-    valid(userId) {
-      validUser({ userId: userId }).then(() => {
-        this.$alert('启用成功')
+    methods: {
+      parseTime: parseTime,
+      addUserBtn() {
+        getAllGroup().then(response => {
+          if (response.length == 0) {
+            this.$alert('请先创建组')
+            return
+          }
+          this.groupList = response
+          this.groupMap = commonUtils.listToMap(response)
+          this.dialogTableVisible = true
+        })
+
+      },
+      pageChange(currentPage) {
+        this.selectInfo.currentPage = currentPage
         this.getUserList()
-      })
-    },
-    invalid(userId) {
-      invalidUser({ userId: userId }).then(() => {
-        this.$alert('停用成功')
-        this.getUserList()
-      })
-    },
-    deleteUser(userId) {
-      deleteUser({ userId: userId }).then(() => {
-        this.$alert('删除成功')
-        this.getUserList()
-      })
+      },
+      getUserList() {
+        getAllUser(this.selectInfo).then(response => {
+          this.selectInfo = response.pageInfo
+          this.userList = response.userList
+        })
+      },
+      // v-el-drag-dialog onDrag callback function
+      handleDrag() {
+        this.$refs.select.blur()
+      },
+      saveUser() {
+        this.$refs.userForm.validate(valid => {
+          if (valid) {
+            this.userInfo.groupId = this.groupMap.get(this.userInfo.groupId)
+            addUser(this.userInfo).then(() => {
+              this.$alert('保存成功,用户密码为默认密码')
+              this.getUserList()
+              this.dialogTableVisible = false
+            })
+          } else {
+            this.$alert('表单填写错误')
+            return false
+          }
+        })
+      },
+      passwordRevert(userId) {
+        passwordRevert(userId).then(() => {
+          this.$alert('重置成功')
+        })
+      },
+      valid(userId) {
+        validUser({userId: userId}).then(() => {
+          this.$alert('启用成功')
+          this.getUserList()
+        })
+      },
+      invalid(userId) {
+        invalidUser({userId: userId}).then(() => {
+          this.$alert('停用成功')
+          this.getUserList()
+        })
+      },
+      deleteUser(userId) {
+        deleteUser({userId: userId}).then(() => {
+          this.$alert('删除成功')
+          this.getUserList()
+        })
+      }
     }
   }
-}
 </script>
 
 <style lang="scss" scoped>
